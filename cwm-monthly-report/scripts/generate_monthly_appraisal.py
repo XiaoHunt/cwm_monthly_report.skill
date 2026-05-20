@@ -408,6 +408,21 @@ def validate_draft(draft: dict[str, Any]) -> None:
     for key in ("main_score", "execution_score", "collaboration_score"):
         if not isinstance(draft[key], int):
             raise ValueError(f"{key} must be an integer")
+    for key in ("main_description", "execution_description", "collaboration_description"):
+        value = draft[key]
+        if not isinstance(value, str) or not value.strip():
+            raise ValueError(f"{key} must be a non-empty string")
+        if looks_like_encoding_loss(value):
+            raise ValueError(
+                f"{key} appears to contain encoding-loss placeholders ('?'). "
+                "Regenerate draft.json as UTF-8 before filling the workbook."
+            )
+
+
+def looks_like_encoding_loss(value: str) -> bool:
+    question_count = value.count("?")
+    has_cjk = any("\u4e00" <= char <= "\u9fff" for char in value)
+    return "????" in value or (question_count >= 10 and not has_cjk)
 
 
 def fill_template(template_path: Path, draft_path: Path, output_dir: Path) -> Path:
