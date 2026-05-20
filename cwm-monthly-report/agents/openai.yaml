@@ -1,0 +1,7 @@
+interface:
+  display_name: "CWM Monthly Report"
+  short_description: "Fill CWM appraisal from Raven work logs"
+  default_prompt: "Use $cwm-monthly-report to extract Raven work items and fill a CyweeMotion monthly appraisal workbook."
+
+policy:
+  allow_implicit_invocation: true

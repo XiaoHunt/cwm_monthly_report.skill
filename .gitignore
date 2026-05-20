@@ -1,0 +1,4 @@
+.skill-test-output/
+outputs/
+__pycache__/
+*.pyc
