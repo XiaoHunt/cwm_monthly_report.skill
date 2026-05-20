@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import argparse
 import calendar
+import copy
 import json
 import math
 import re
@@ -16,6 +17,7 @@ from pathlib import Path
 from typing import Any
 
 try:
+    from openpyxl.styles import Alignment
     from openpyxl import load_workbook
 except ImportError as exc:  # pragma: no cover - environment guidance
     raise SystemExit(
@@ -52,6 +54,11 @@ FILL_CELLS = {
     "execution_score": "G9",
     "collaboration_description": "F10",
     "collaboration_score": "G10",
+}
+DESCRIPTION_FIELDS = {
+    "main_description",
+    "execution_description",
+    "collaboration_description",
 }
 
 
@@ -425,6 +432,15 @@ def looks_like_encoding_loss(value: str) -> bool:
     return "????" in value or (question_count >= 10 and not has_cjk)
 
 
+def format_description_text(value: str) -> str:
+    lines = [line.strip() for line in value.splitlines() if line.strip()]
+    formatted = []
+    for index, line in enumerate(lines, start=1):
+        line = re.sub(r"^(?:[\u3000\s]*)\d+[.、]\s*", "", line)
+        formatted.append(f"\u3000\u3000{index}. {line}")
+    return "\n".join(formatted)
+
+
 def fill_template(template_path: Path, draft_path: Path, output_dir: Path) -> Path:
     draft = json.loads(draft_path.read_text(encoding="utf-8"))
     validate_draft(draft)
@@ -432,7 +448,23 @@ def fill_template(template_path: Path, draft_path: Path, output_dir: Path) -> Pa
     wb = load_workbook(template_path, data_only=False)
     ws = wb.active
     for key, coord in FILL_CELLS.items():
-        ws[coord].value = draft[key]
+        value = draft[key]
+        if key in DESCRIPTION_FIELDS:
+            value = format_description_text(value)
+        ws[coord].value = value
+        if key in DESCRIPTION_FIELDS:
+            current = copy.copy(ws[coord].alignment)
+            ws[coord].alignment = Alignment(
+                horizontal=current.horizontal,
+                vertical=current.vertical or "center",
+                textRotation=current.textRotation,
+                wrapText=True,
+                shrinkToFit=current.shrinkToFit,
+                indent=current.indent,
+                relativeIndent=current.relativeIndent,
+                justifyLastLine=current.justifyLastLine,
+                readingOrder=current.readingOrder,
+            )
 
     output_dir.mkdir(parents=True, exist_ok=True)
     output_path = output_dir / f"{template_path.stem}_filled{template_path.suffix}"

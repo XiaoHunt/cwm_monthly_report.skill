@@ -19,9 +19,10 @@ python cwm-monthly-report/scripts/generate_monthly_appraisal.py extract --workbo
 
 3. Draft concise Chinese appraisal text from the extracted work items:
 
-- `main_description`: 4-6 lines for `F5`, grouped by customer/project coverage, sleep issues, sport features, sensor/power/configuration, UI-vs-algorithm output, cross-team follow-up, and unresolved work.
-- `execution_description`: 3-4 lines for `F9`, focused on ownership, follow-through, problem closure, and multi-project execution.
-- `collaboration_description`: 3-4 lines for `F10`, focused on customer communication, algorithm/PM/QA coordination, information handoff, and improvement points.
+- `main_description`: 4-6 numbered paragraphs for `F5`, grouped by customer/project coverage, sleep issues, sport features, sensor/power/configuration, UI-vs-algorithm output, cross-team follow-up, and unresolved work.
+- `execution_description`: 3-4 numbered paragraphs for `F9`, focused on ownership, follow-through, problem closure, and multi-project execution.
+- `collaboration_description`: 3-4 numbered paragraphs for `F10`, focused on customer communication, algorithm/PM/QA coordination, information handoff, and improvement points.
+- Start each paragraph with two full-width spaces followed by `1.`/`2.`/`3.` style numbering, such as `　　1.`. Put each numbered paragraph on its own line.
 - Keep `OPEN` or blank-status items as "持续跟进/推动验证/等待反馈"; do not describe them as completed or closed.
 - Use the score recommendations from `summary.json` unless the user explicitly asks to adjust them.
 
@@ -70,6 +71,8 @@ Write only these appraisal cells:
 - `G9`: execution score
 - `F10`: collaboration description
 - `G10`: collaboration score
+
+For `F5`, `F9`, and `F10`, keep text wrapped and apply visible first-line indentation by preserving the leading two full-width spaces before each numbered paragraph. Use numbered paragraphs so the appraisal is easier to scan in Excel.
 
 Preserve existing formulas such as `G6`, `G11`, and `G12`.
 
