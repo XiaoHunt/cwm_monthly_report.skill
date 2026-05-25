@@ -117,7 +117,28 @@ def parse_period(value: str | None) -> tuple[date, date]:
     return month_bounds(year, month)
 
 
-def parse_period_arg(period: str | None, template_path: Path) -> tuple[date, date]:
+def parse_iso_date_arg(value: str, option_name: str) -> date:
+    try:
+        return date.fromisoformat(value)
+    except ValueError as exc:
+        raise ValueError(f"{option_name} must use YYYY-MM-DD format") from exc
+
+
+def parse_period_arg(
+    period: str | None,
+    template_path: Path,
+    start_date: str | None = None,
+    end_date: str | None = None,
+) -> tuple[date, date]:
+    if start_date or end_date:
+        if not start_date or not end_date:
+            raise ValueError("--start-date and --end-date must be provided together")
+        start = parse_iso_date_arg(start_date, "--start-date")
+        end = parse_iso_date_arg(end_date, "--end-date")
+        if start > end:
+            raise ValueError("--start-date must be on or before --end-date")
+        return start, end
+
     if period:
         match = re.fullmatch(r"(20\d{2})-(0[1-9]|1[0-2])", period)
         if not match:
@@ -390,7 +411,7 @@ def command_extract(args: argparse.Namespace) -> int:
     output_dir = Path(args.output_dir)
     output_dir.mkdir(parents=True, exist_ok=True)
 
-    start, end = parse_period_arg(args.period, template_path)
+    start, end = parse_period_arg(args.period, template_path, args.start_date, args.end_date)
     items = extract_items(workbook_path, start, end)
     summary = build_summary(workbook_path, template_path, start, end, items)
 
@@ -487,6 +508,8 @@ def build_parser() -> argparse.ArgumentParser:
     extract.add_argument("--template", required=True, help="CyweeMotion appraisal workbook")
     extract.add_argument("--output-dir", required=True, help="Directory for summary.json and summary.md")
     extract.add_argument("--period", help="Override appraisal month as YYYY-MM")
+    extract.add_argument("--start-date", help="Override period start date as YYYY-MM-DD")
+    extract.add_argument("--end-date", help="Override period end date as YYYY-MM-DD")
     extract.set_defaults(func=command_extract)
 
     fill = subparsers.add_parser("fill", help="Fill a copy of the appraisal workbook from draft JSON")

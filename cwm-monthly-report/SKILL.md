@@ -15,6 +15,12 @@ Use this skill to fill a CyweeMotion monthly performance appraisal from Raven's 
 python cwm-monthly-report/scripts/generate_monthly_appraisal.py extract --workbook <project-tracking.xlsx> --template <appraisal-template.xlsx> --output-dir <output-dir>
 ```
 
+For a custom appraisal window, pass explicit dates:
+
+```powershell
+python cwm-monthly-report/scripts/generate_monthly_appraisal.py extract --workbook <project-tracking.xlsx> --template <appraisal-template.xlsx> --output-dir <output-dir> --start-date YYYY-MM-DD --end-date YYYY-MM-DD
+```
+
 2. Read `<output-dir>/summary.json` and `<output-dir>/summary.md`.
 
 3. Draft concise Chinese appraisal text from the extracted work items:
@@ -50,7 +56,8 @@ Return links to the filled `.xlsx` and `summary.md`.
 ## Extraction Rules
 
 - Read only the `Raven` worksheet from the project tracking workbook.
-- Infer the appraisal month from the template's `D2:F2` merged title text, such as `考核时间：2026 年 3 月`. If inference fails, rerun extraction with `--period YYYY-MM`.
+- If the user gives an explicit date window, use `--start-date YYYY-MM-DD --end-date YYYY-MM-DD`.
+- Otherwise infer the appraisal month from the template's `D2:F2` merged title text, such as `考核时间：2026 年 3 月`. If inference fails, rerun extraction with `--period YYYY-MM`.
 - Use the natural month as the default period, from the first day through the last day of that month.
 - Recognize these columns by normalized header text: `Project Name`, `Function`, `Algo Ver.`, `Quantity`, `Issues`, `Status`, `Owners`, `Completion Date`, `Notes`.
 - Carry down blank project context columns so issue rows inherit the project name, function, and algorithm version from merged or grouped rows above.
